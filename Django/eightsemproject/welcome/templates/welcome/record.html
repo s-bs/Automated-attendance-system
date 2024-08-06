@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Records</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #333;
+            padding: 10px;
+        }
+        .navbar a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 16px;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .filter-container {
+            text-align: center;
+            margin: 20px;
+        }
+        .center-table {
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+        .center-table th, .center-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid black;
+        }
+    </style>
+    <script>
+        function filterData() {
+            const semester = parseInt(document.getElementById('semester-select').value, 10);
+            const rows = document.querySelectorAll('.data-row');
+            rows.forEach(row => {
+                const dataSemester = row.getAttribute('data-semester');
+                const rowSemester = parseInt(dataSemester, 10);
+                if (isNaN(semester) || semester === rowSemester) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/" id="home-button">Face-Detect</a>
+        <a href="/register" id="register-button">Register</a>
+        <a href="/recordview" id="record-button">Attendance</a>
+    </div>
+    <h1 style="text-align: center;">Attendance Records</h1>
+    <div class="filter-container">
+        <label for="semester-select">Select Semester: </label>
+        <select id="semester-select" onchange="filterData()">
+            <option value="">All</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+        </select>
+    </div>
+    {% if data %}
+        <table class="center-table">
+            <thead>
+                <tr>
+                    {% for header in data.0 %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data|slice:"1:" %}
+                    <tr class="data-row" data-semester="{{ row.2 }}"> <!-- Assuming row.1 is the semester column -->
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center;">No data available.</p>
+    {% endif %}
+</body>
+</html>

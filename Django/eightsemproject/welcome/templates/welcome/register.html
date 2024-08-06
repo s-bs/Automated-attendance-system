@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #333;
+            padding: 10px;
+        }
+        .navbar a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 16px;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .filter-container {
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .section, .section-cam {
+            margin: 20px;
+            align-items: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/" id="home-button">Face-Detect</a>
+        <a href="/register" id="register-button">Register</a>
+        <a href="/recordview" id="record-button">Attendance</a>
+    </div>
+    <div class="container">
+        <div class="form-section">
+            <h1>Register</h1>
+            <form id="registration-form" method="post" action="{% url 'storestudentsinfo' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="section">
+                    <label for="name" style="padding: 30px;">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="section">
+                    <label for="semester" style="padding: 17px;">Semester:</label>
+                    <input type="number" id="semester" name="semester" required>
+                </div>
+                <div class="section">
+                    <input type="hidden" id="image-data" name="image_data">
+                    <button type="button" onclick="captureImage()">Capture Image</button>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
+        <div class="section-cam">
+            <video id="video" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="captured-image" src="" alt="Captured Image" style="display:none;">
+        </div>
+    </div>
+
+    <script>
+        // Start camera stream
+        function startCamera() {
+            const video = document.getElementById('video');
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                });
+            }
+        }
+
+        function captureImage() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            const img = document.getElementById('captured-image');
+            const imageDataInput = document.getElementById('image-data');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            img.src = dataUrl;
+            img.style.display = 'block';
+            imageDataInput.value = dataUrl;
+
+            video.style.display = 'none';
+        }
+
+        // Start the camera when the page loads
+        window.addEventListener('load', startCamera);
+    </script>
+</body>
+</html>
