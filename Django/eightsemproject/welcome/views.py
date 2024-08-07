@@ -10,13 +10,12 @@ from django.conf import settings
 from django.http import JsonResponse
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image as keras_image
-from PIL import Image
 from .models import StudentInfo
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.multioutput import MultiOutputClassifier
 import pandas as pd
 from datetime import datetime
 from openpyxl import load_workbook
+from knnscratch import KNN
+from multioutput import MultiOutput
 
 
 # Load the Haar cascade classifier for face detection
@@ -140,12 +139,14 @@ def detect_faces(request):
                 labels = np.array(labels)
                 semester = np.array(semester)
                 combined_targets = np.column_stack((labels, semester))
-                # Initialize and fit MultiOutput  KNN classifier
-                knn = KNeighborsClassifier(n_neighbors=1)  # You can change the number of neighbors
-                multioutput_knn = MultiOutputClassifier(knn)
+                # Initialize and fit MultiOutput  KNN classifier scratch
+                knn = KNN(k=1, distance_metric='euclidean', weights='uniform')  # You can change the number of neighbors
+                multioutput_knn = MultiOutput(knn, k=1, distance_metric='euclidean', weights='uniform')
                 multioutput_knn.fit(feature_vectors, combined_targets) # feature_vectors is X and combine_targets are Y
-                predicted_label, predicted_semester = multioutput_knn.predict([face_vector])[0]
-                print("KNN RESULT: Label -", predicted_label, ", Semester -", predicted_semester)
+                predicted = multioutput_knn.predict([face_vector])[0]
+                predicted_label = predicted[0]
+                predicted_semester = predicted[1]
+                # print("KNN RESULT: Label -", predicted_label, ", Semester -", predicted_semester)
 
                 # make attendance with date for real student start
                 # create a excel to store the a attendance of student
@@ -176,6 +177,7 @@ def detect_faces(request):
                         message = "Attendance Done"
                     else:
                         message = "Already done attendance"
+                        # print('Already Attendance Done')
                 except FileNotFoundError:
                     # If the file does not exist, create it
                     attendance_df.to_excel(excel_filename, index=False)
